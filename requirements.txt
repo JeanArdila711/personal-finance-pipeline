@@ -1,17 +1,17 @@
 # HTTP & API
-requests==2.32.3
-python-dotenv==1.0.1
+requests>=2.32.3
+python-dotenv>=1.0.1
 
 # Data manipulation
-pandas==2.2.3
+pandas>=2.3.0
 
 # Testing
-pytest==8.3.3
-pytest-mock==3.14.0
-responses==0.25.3
+pytest>=8.3.3
+pytest-mock>=3.14.0
+responses>=0.25.3
 
 # Code quality
-ruff==0.7.4
+ruff>=0.7.4
 
 # Dev utilities
-ipython==8.29.0
+ipython>=8.29.0
