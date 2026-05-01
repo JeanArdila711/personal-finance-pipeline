@@ -34,14 +34,23 @@ DBT_DIR = PROJECT_ROOT / "dbt"
 DBT_TIMEOUT_SECONDS = 600
 
 
-def run_dbt(dbt_dir: str | Path = DBT_DIR, profiles_dir: str | Path = DBT_DIR) -> int:
+def run_dbt(
+    dbt_dir: str | Path = DBT_DIR,
+    profiles_dir: str | Path = DBT_DIR,
+    db_path: str | Path | None = None,
+) -> int:
     """Corre dbt run y dbt test. Retorna 0 si todo pasa, 1 si algo falla."""
+    env = os.environ.copy()
+    if db_path is not None:
+        env["FINANCE_DB_PATH"] = str(Path(db_path).resolve())
+
     for cmd in ["run", "test"]:
         logger.info(f"🔄 Corriendo dbt {cmd}...")
         result = subprocess.run(
             ["dbt", cmd, "--profiles-dir", str(profiles_dir)],
             cwd=str(dbt_dir),
             timeout=DBT_TIMEOUT_SECONDS,
+            env=env,
         )
         if result.returncode != 0:
             logger.error(f"❌ dbt {cmd} falló con exit code {result.returncode}")
@@ -94,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
         logger.info("⏭️  dbt skipped (--skip-dbt)")
     else:
         logger.info("🔄 Paso 3/3: dbt run + test")
-        code = run_dbt()
+        code = run_dbt(db_path=args.db)
         if code != 0:
             logger.error("💥 dbt falló — pipeline incompleto")
             return 1

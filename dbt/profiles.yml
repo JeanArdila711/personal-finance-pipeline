@@ -6,3 +6,4 @@ personal_finance:
       path: "{{ env_var('FINANCE_DB_PATH', '../finance.db') }}"
       schema: main
       threads: 1
+
