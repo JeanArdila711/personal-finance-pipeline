@@ -36,18 +36,10 @@ DBT_TIMEOUT_SECONDS = 600
 
 def run_dbt(dbt_dir: str | Path = DBT_DIR, profiles_dir: str | Path = DBT_DIR) -> int:
     """Corre dbt run y dbt test. Retorna 0 si todo pasa, 1 si algo falla."""
-    dbt_bin = PROJECT_ROOT / ".venv" / "Scripts" / "dbt"
-    if not dbt_bin.exists():
-        dbt_bin = PROJECT_ROOT / ".venv" / "bin" / "dbt"
-
-    if not Path(dbt_bin).exists():
-        logger.error(f"❌ dbt binary no encontrado en {dbt_bin}")
-        return 1
-
     for cmd in ["run", "test"]:
         logger.info(f"🔄 Corriendo dbt {cmd}...")
         result = subprocess.run(
-            [str(dbt_bin), cmd, "--profiles-dir", str(profiles_dir)],
+            [sys.executable, "-m", "dbt", cmd, "--profiles-dir", str(profiles_dir)],
             cwd=str(dbt_dir),
             timeout=DBT_TIMEOUT_SECONDS,
         )
