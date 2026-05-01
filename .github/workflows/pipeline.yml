@@ -1,0 +1,30 @@
+name: Finance Pipeline
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # lunes 7am Colombia (UTC-5 = 12pm UTC)
+  workflow_dispatch:        # trigger manual desde GitHub UI
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        run: python -m src.pipeline --days 365
+        env:
+          WALLET_API_KEY: ${{ secrets.WALLET_API_KEY }}
+          FINANCE_DB_PATH: finance.db
