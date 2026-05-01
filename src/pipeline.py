@@ -31,21 +31,29 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DBT_DIR = PROJECT_ROOT / "dbt"
 
 
+DBT_TIMEOUT_SECONDS = 600
+
+
 def run_dbt(dbt_dir: str | Path = DBT_DIR, profiles_dir: str | Path = DBT_DIR) -> int:
     """Corre dbt run y dbt test. Retorna 0 si todo pasa, 1 si algo falla."""
     dbt_bin = PROJECT_ROOT / ".venv" / "Scripts" / "dbt"
     if not dbt_bin.exists():
         dbt_bin = PROJECT_ROOT / ".venv" / "bin" / "dbt"
 
+    if not Path(dbt_bin).exists():
+        logger.error(f"❌ dbt binary no encontrado en {dbt_bin}")
+        return 1
+
     for cmd in ["run", "test"]:
         logger.info(f"🔄 Corriendo dbt {cmd}...")
         result = subprocess.run(
             [str(dbt_bin), cmd, "--profiles-dir", str(profiles_dir)],
             cwd=str(dbt_dir),
+            timeout=DBT_TIMEOUT_SECONDS,
         )
         if result.returncode != 0:
             logger.error(f"❌ dbt {cmd} falló con exit code {result.returncode}")
-            return result.returncode
+            return 1
         logger.info(f"✅ dbt {cmd} completado")
 
     return 0
@@ -68,22 +76,26 @@ def main(argv: list[str] | None = None) -> int:
 
     os.environ["FINANCE_DB_PATH"] = args.db
 
-    # 1. Extract
-    logger.info(f"🚀 Iniciando pipeline (--days={args.days})")
-    logger.info("📥 Paso 1/3: Extract")
-    sys.argv = ["extract_records", "--days", str(args.days)]
-    code = extract_main()
-    if code != 0:
-        logger.error("💥 Extract falló — abortando pipeline")
-        return 1
+    saved_argv = sys.argv[:]
+    try:
+        # 1. Extract
+        logger.info(f"🚀 Iniciando pipeline (--days={args.days})")
+        logger.info("📥 Paso 1/3: Extract")
+        sys.argv = ["extract_records", "--days", str(args.days)]
+        code = extract_main()
+        if code != 0:
+            logger.error("💥 Extract falló — abortando pipeline")
+            return 1
 
-    # 2. Load
-    logger.info("📦 Paso 2/3: Load")
-    sys.argv = ["load_records", "--db", args.db]
-    code = load_main()
-    if code != 0:
-        logger.error("💥 Load falló — abortando pipeline")
-        return 1
+        # 2. Load
+        logger.info("📦 Paso 2/3: Load")
+        sys.argv = ["load_records", "--db", args.db]
+        code = load_main()
+        if code != 0:
+            logger.error("💥 Load falló — abortando pipeline")
+            return 1
+    finally:
+        sys.argv = saved_argv
 
     # 3. dbt
     if args.skip_dbt:
