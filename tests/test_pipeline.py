@@ -78,17 +78,23 @@ def test_pipeline_skip_dbt_flag(tmp_path):
 
 def test_run_dbt_returns_nonzero_on_failure():
     """run_dbt retorna exit code no-cero si dbt falla."""
-    with patch("src.pipeline.subprocess.run") as mock_run:
+    with (
+        patch("src.pipeline.subprocess.run") as mock_run,
+        patch("src.pipeline.Path.exists", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=1)
 
         result = run_dbt(dbt_dir="dbt", profiles_dir="dbt")
 
-        assert result != 0
+        assert result == 1
 
 
 def test_run_dbt_returns_zero_on_success():
     """run_dbt retorna 0 si dbt run y dbt test pasan."""
-    with patch("src.pipeline.subprocess.run") as mock_run:
+    with (
+        patch("src.pipeline.subprocess.run") as mock_run,
+        patch("src.pipeline.Path.exists", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=0)
 
         result = run_dbt(dbt_dir="dbt", profiles_dir="dbt")
