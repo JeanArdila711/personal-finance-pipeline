@@ -1,0 +1,8 @@
+personal_finance:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('FINANCE_DB_PATH', '../finance.db') }}"
+      schema: main
+      threads: 1

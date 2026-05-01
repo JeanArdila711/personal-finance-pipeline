@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: dim_accounts
+    description: "Dimensión de cuentas activas (no archivadas)."
+    columns:
+      - name: account_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_categories
+    description: "Dimensión de categorías de Wallet."
+    columns:
+      - name: category_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fact_transactions
+    description: "Tabla de hechos con todas las transacciones."
+    columns:
+      - name: record_id
+        tests:
+          - not_null
+          - unique
+      - name: account_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_id
+
+  - name: gastos_por_categoria_mensual
+    description: "Agregado mensual de gastos por categoría."

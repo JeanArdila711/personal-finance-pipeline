@@ -1,0 +1,55 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    tables:
+      - name: wallet_accounts
+        identifier: raw_wallet_accounts
+      - name: wallet_categories
+        identifier: raw_wallet_categories
+      - name: wallet_records
+        identifier: raw_wallet_records
+
+models:
+  - name: stg_wallet__accounts
+    description: "Cuentas de Wallet, limpias y tipadas. Excluye archivadas."
+    columns:
+      - name: account_id
+        tests:
+          - not_null
+          - unique
+      - name: account_name
+        tests:
+          - not_null
+      - name: account_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['CurrentAccount', 'SavingAccount', 'Cash', 'CreditCard', 'General']
+
+  - name: stg_wallet__categories
+    description: "Categorías de Wallet, limpias y tipadas."
+    columns:
+      - name: category_id
+        tests:
+          - not_null
+          - unique
+      - name: category_name
+        tests:
+          - not_null
+
+  - name: stg_wallet__records
+    description: "Transacciones de Wallet, limpias y tipadas."
+    columns:
+      - name: record_id
+        tests:
+          - not_null
+          - unique
+      - name: account_id
+        tests:
+          - not_null
+      - name: record_type
+        tests:
+          - accepted_values:
+              values: ['expense', 'income', 'transfer']
