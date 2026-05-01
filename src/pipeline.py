@@ -39,7 +39,7 @@ def run_dbt(dbt_dir: str | Path = DBT_DIR, profiles_dir: str | Path = DBT_DIR) -
     for cmd in ["run", "test"]:
         logger.info(f"🔄 Corriendo dbt {cmd}...")
         result = subprocess.run(
-            [sys.executable, "-m", "dbt", cmd, "--profiles-dir", str(profiles_dir)],
+            ["dbt", cmd, "--profiles-dir", str(profiles_dir)],
             cwd=str(dbt_dir),
             timeout=DBT_TIMEOUT_SECONDS,
         )
